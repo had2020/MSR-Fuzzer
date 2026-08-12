@@ -1,6 +1,4 @@
-# TODO rest of README...
-
-This is from template for my projects.
+# TODO MORE README CONTENTS!
 
 #### License
 
