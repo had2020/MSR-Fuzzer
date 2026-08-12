@@ -16,7 +16,7 @@ enum Opcode {
 uint16_t run_search(uint16_t input[4], uint16_t expect[4]) {
   for (uint16_t i = 0; i < UINT16_MAX; i++) {
     // uint16_t registers[4] = input[4];
-    uint16_t registers[4] = memcpy(input[4], registers, sizeof(input[4]));
+    uint16_t registers[4] = {input[0], input[1], input[2], input[3]};
 
     uint16_t opcodes[] = {i >> 13, (i << 3) >> 10, (i << 6) >> 7,
                           (i << 9) >> 4};
@@ -73,4 +73,13 @@ uint16_t run_search(uint16_t input[4], uint16_t expect[4]) {
   }
 }
 
-int main() { return 0; }
+int main() {
+  uint16_t input[4] = {4, 4, 0, 0};
+  uint16_t expect[4] = {256, 0, 0, 0};
+
+  uint16_t solution_seed = run_search(input, expect);
+
+  printf("Solution at seed: %d\n", solution_seed);
+
+  return 0;
+}
