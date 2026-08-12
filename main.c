@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 // Instruction: [ Opcode: 3bits, dist/reg: 2bits, arg/reg, 2bits]
 enum op {
@@ -16,7 +17,9 @@ enum op {
 uint16_t run_search(uint16_t input[4], uint16_t expect) {
   for (uint16_t i = 0; i < UINT16_MAX; i++) {
     // uint16_t registers[4] = input[4];
-    uint16_t registers[4] = {input[0], input[1], input[2], input[3]};
+    // uint16_t registers[4] = {input[0], input[1], input[2], input[3]};
+    uint16_t registers[4];
+    memcpy(&registers, &input, sizeof(input[4]));
 
     uint16_t opcodes[4] = {i >> 13, (i & 0x1C00) >> 10, (i & 0xE0) >> 5,
                            (i & 0x1C) >> 2};
@@ -64,7 +67,7 @@ uint16_t run_search(uint16_t input[4], uint16_t expect) {
   return 0;
 }
 
-void print_code(uint16_t seed) {
+void print_code(uint16_t seed, uint16_t input[4]) {
   uint16_t i = seed;
   uint16_t opcodes[4] = {i >> 13, (i & 0x1C00) >> 10, (i & 0xE0) >> 5,
                          (i & 0x1C) >> 2};
@@ -75,22 +78,66 @@ void print_code(uint16_t seed) {
   uint16_t arg_reg[4] = {(i & 0xC0) >> 6, (i & 0x30) >> 4, (i & 0xC) >> 2,
                          i & 0x3};
 
+  uint16_t registers[4];
+  memcpy(&registers, &input, sizeof(input[4]));
+  printf("%d_test\n\n\n\n", registers[0]);
+
   for (int i = 0; i < 4; i++) {
-    printf("OPCODE: %d, DIST_REG: %d, ARG_REG: %d\n", opcodes[i], dist_reg[i],
-           arg_reg[i]);
+    char opcode_str[] = "___";
+
+    switch (opcodes[i]) {
+    case AND:
+      registers[dist_reg[i]] &= registers[arg_reg[i]];
+      strcpy(opcode_str, "AND");
+      break;
+    case NOT:
+      registers[dist_reg[i]] = !registers[arg_reg[i]];
+      strcpy(opcode_str, "NOT");
+      break;
+    case OR:
+      registers[dist_reg[i]] |= registers[arg_reg[i]];
+      strcpy(opcode_str, "OR ");
+      break;
+    case XOR:
+      registers[dist_reg[i]] ^= registers[arg_reg[i]];
+      strcpy(opcode_str, "XOR");
+      break;
+    case SUB:
+      registers[dist_reg[i]] -= registers[arg_reg[i]];
+      strcpy(opcode_str, "SUB");
+      break;
+    case IMM:
+      registers[dist_reg[i]] = dist_reg[i] & arg_reg[i];
+      strcpy(opcode_str, "IMM");
+      break;
+    case SHR:
+      registers[dist_reg[i]] >>= registers[arg_reg[i]];
+      strcpy(opcode_str, "SHR");
+      break;
+    case SHL:
+      registers[dist_reg[i]] <<= registers[arg_reg[i]];
+      strcpy(opcode_str, "SHL");
+      break;
+    }
+
+    printf("OPCODE: (%s), DIST_REG: (%d), ARG_REG: (%d), RegView: "
+           "(%u)(%u)(%u)(%u)\n",
+           opcode_str, dist_reg[i], arg_reg[i]),
+        registers[0], registers[1], registers[2], registers[3];
   }
 }
 
 int main() {
   uint16_t input[4] = {2194, 100, 0, 0};
+  uint16_t expect = 2094;
 
   uint16_t solution_seed =
-      run_search(input, 2094); // TODO: Filter out dead code with a basic
-                               // optimizer or canonicalizer pass.
+      run_search(input, expect); // TODO: Filter out dead code with a basic
+                                 // optimizer or canonicalizer pass.
 
   printf("Solution at seed: %d\n", solution_seed);
-  print_code(solution_seed); // TODO: Display with more detail, and provide a
-                             // live register map view.
+  print_code(solution_seed, input); // TODO: Display with more detail, and
+                                    // provide a live register map view.
 
   return 0;
 }
