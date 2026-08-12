@@ -82,12 +82,15 @@ void print_code(uint16_t seed) {
 }
 
 int main() {
-  uint16_t input[4] = {4, 4, 0, 0};
+  uint16_t input[4] = {2194, 100, 0, 0};
 
-  uint16_t solution_seed = run_search(input, 8);
+  uint16_t solution_seed =
+      run_search(input, 2094); // TODO: Filter out dead code with a basic
+                               // optimizer or canonicalizer pass.
 
   printf("Solution at seed: %d\n", solution_seed);
-  print_code(solution_seed);
+  print_code(solution_seed); // TODO: Display with more detail, and provide a
+                             // live register map view.
 
   return 0;
 }
