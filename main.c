@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-// Instruction: [ Opcode: 3bits, dist/reg: 2bits, arg/reg, 2bits, 1bit ]
-enum Opcode {
+// Instruction: [ Opcode: 3bits, dist/reg: 2bits, arg/reg, 2bits]
+enum op {
   AND = 0,
   NOT = 1,
   OR = 2,
@@ -13,71 +13,61 @@ enum Opcode {
   SHL = 7,
 };
 
-uint16_t run_search(uint16_t input[4], uint16_t expect[4]) {
-  for (uint16_t i = 0; i < UINT16_MAX; i++) {
+uint16_t run_search(uint16_t input[4], uint16_t expect) {
+  for (uint16_t i = 0; i < (UINT16_MAX - 1); i++) {
     // uint16_t registers[4] = input[4];
     uint16_t registers[4] = {input[0], input[1], input[2], input[3]};
 
-    uint16_t opcodes[] = {i >> 13, (i << 3) >> 10, (i << 6) >> 7,
-                          (i << 9) >> 4};
+    uint16_t opcodes[4] = {i >> 13, (i & 0x1C00) >> 10, (i & 0xE0) >> 5,
+                           (i & 0x1C) >> 2};
 
-    uint16_t dist_reg[] = {i >> 13, (i << 3) >> 10, (i << 6) >> 7,
-                           (i << 9) >> 4};
+    uint16_t dist_reg[4] = {i >> 14, (i & 0x3000) >> 12, (i & 0xC00) >> 10,
+                            (i & 0x300) >> 8};
 
-    uint16_t arg_reg[] = {i >> 13, (i << 3) >> 10, (i << 6) >> 7,
-                          (i << 9) >> 4};
+    uint16_t arg_reg[4] = {(i & 0xC0) >> 6, (i & 0x30) >> 4, (i & 0xC) >> 2,
+                           i & 0x3};
 
-    for (int j = 0; j < 4; j++) {
-      switch (opcodes[i]) {
-      case 0: {
-        registers[dist_reg[i]] = registers[dist_reg[i]] & registers[arg_reg[i]];
+    for (int j = 0; j < (4 - 1); j++) {
+      switch (opcodes[j]) {
+      case AND:
+        registers[dist_reg[j]] &= registers[arg_reg[j]];
         break;
-      }
-      case 1: {
-        registers[dist_reg[i]] = !registers[arg_reg[i]];
+      case NOT:
+        registers[dist_reg[j]] = !registers[arg_reg[j]];
         break;
-      }
-      case 2: {
-        registers[dist_reg[i]] = registers[dist_reg[i]] | registers[arg_reg[i]];
+      case OR:
+        registers[dist_reg[j]] |= registers[arg_reg[j]];
         break;
-      }
-      case 3: {
-        registers[dist_reg[i]] = registers[dist_reg[i]] ^ registers[arg_reg[i]];
+      case XOR:
+        registers[dist_reg[j]] ^= registers[arg_reg[j]];
         break;
-      }
-      case 4: {
-        registers[dist_reg[i]] = registers[dist_reg[i]] - registers[arg_reg[i]];
+      case SUB:
+        registers[dist_reg[j]] -= registers[arg_reg[j]];
         break;
-      }
-      case 5: {
-        registers[dist_reg[i]] = dist_reg[i] & arg_reg[i];
+      case IMM:
+        registers[dist_reg[j]] = dist_reg[j] & arg_reg[j];
         break;
-      }
-      case 6: {
-        registers[dist_reg[i]] =
-            registers[dist_reg[i]] >> registers[arg_reg[i]];
+      case SHR:
+        registers[dist_reg[j]] >>= registers[arg_reg[j]];
         break;
-      }
-      case 7: {
-        registers[dist_reg[i]] = registers[dist_reg[i]]
-                                 << registers[arg_reg[i]];
+      case SHL:
+        registers[dist_reg[j]] <<= registers[arg_reg[j]];
         break;
-      }
       }
     }
 
-    if (registers == expect) {
+    if (registers[0] == expect) {
       return i;
       break;
     }
   }
+  return 0;
 }
 
 int main() {
   uint16_t input[4] = {4, 4, 0, 0};
-  uint16_t expect[4] = {256, 0, 0, 0};
 
-  uint16_t solution_seed = run_search(input, expect);
+  uint16_t solution_seed = run_search(input, 8);
 
   printf("Solution at seed: %d\n", solution_seed);
 
