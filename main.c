@@ -18,8 +18,8 @@ uint16_t run_search(uint16_t input[4], uint16_t expect) {
   for (uint16_t i = 0; i < UINT16_MAX; i++) {
     // uint16_t registers[4] = input[4];
     // uint16_t registers[4] = {input[0], input[1], input[2], input[3]};
-    uint16_t registers[4];
-    memcpy(&registers, &input, sizeof(input[4]));
+    uint16_t registers[4] = {};
+    memcpy(registers, input, 4 * sizeof(uint16_t));
 
     uint16_t opcodes[4] = {i >> 13, (i & 0x1C00) >> 10, (i & 0xE0) >> 5,
                            (i & 0x1C) >> 2};
@@ -78,9 +78,9 @@ void print_code(uint16_t seed, uint16_t input[4]) {
   uint16_t arg_reg[4] = {(i & 0xC0) >> 6, (i & 0x30) >> 4, (i & 0xC) >> 2,
                          i & 0x3};
 
-  uint16_t registers[4];
-  memcpy(&registers, &input, sizeof(input[4]));
-  printf("%d_test\n\n\n\n", registers[0]);
+  uint16_t registers[4] = {};
+
+  memcpy(registers, input, 4 * sizeof(uint16_t));
 
   for (int i = 0; i < 4; i++) {
     char opcode_str[] = "___";
@@ -122,8 +122,8 @@ void print_code(uint16_t seed, uint16_t input[4]) {
 
     printf("OPCODE: (%s), DIST_REG: (%d), ARG_REG: (%d), RegView: "
            "(%u)(%u)(%u)(%u)\n",
-           opcode_str, dist_reg[i], arg_reg[i]),
-        registers[0], registers[1], registers[2], registers[3];
+           opcode_str, dist_reg[i], arg_reg[i], registers[0], registers[1],
+           registers[2], registers[3]);
   }
 }
 
