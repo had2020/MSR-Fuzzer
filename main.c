@@ -128,8 +128,21 @@ void print_code(uint16_t seed, uint16_t input[4]) {
 }
 
 int main() {
+  // Subtraction
   uint16_t input[4] = {2194, 100, 0, 0};
   uint16_t expect = 2094;
+
+  /*
+  // Bit Clear
+  uint16_t input[4] = {42, 1, 0, 0}; // 0x002A, 0x0001
+  uint16_t expect = 40;              // 0x0028
+  */
+
+  /*
+  // Boundary Alignment
+  uint16_t input[4] = {1050, 64, 1, 0}; // aligns 1050 down to a 64-byte
+  boundary uint16_t expect = 1024;
+  */
 
   uint16_t solution_seed =
       run_search(input, expect); // TODO: Filter out dead code with a basic
@@ -138,6 +151,12 @@ int main() {
   printf("Solution at seed: %d\n", solution_seed);
   print_code(solution_seed, input); // TODO: Display with more detail, and
                                     // provide a live register map view.
+
+  /* TODO: Changing ISAs
+  for (uint16_t i = 0; i < UINT16_MAX; i++) {
+    uint16_t solution_seed = run_search(input, expect);
+    printf("iter: %u", i);
+  }*/
 
   return 0;
 }
